@@ -4,8 +4,10 @@ from git import Repo
 import sys
 import os
 import shutil
+from datetime import datetime
 import uuid # we use this for the file content
 from requests import post
+from time import sleep
 # We need the following environment variables:
 # GIT_REPO - The Git Repo repository to clone locally
 # GIT_LOCAL_DIR - The folder to store the local git repository (default: ./git_repository)
@@ -29,6 +31,7 @@ def main() -> int:
     changed_file = os.getenv("GIT_MODIFIED_FILE", "file.txt")
     repository = os.getenv("GIT_REPO", None)
 
+    sys.stdout.write("Hold on, verifying your configuration... ")
     if repository == None:
         sys.stdout.write("Hey!  The Git repository environment variable ($GIT_REPO) isn't set!\n")
         sys.stdout.write("Let's fix that: Just set that to the SSH (or HTTPS if you like that) clone link.\n")
@@ -38,6 +41,7 @@ def main() -> int:
         shutil.rmtree(local_dir)
         sys.stdout.write("done.\n")
 
+    sys.stdout.write("done.\n")
     sys.stdout.write("Cloning local copy... ")
     repo = Repo.clone_from(os.getenv("GIT_REPO"), local_dir)
     sys.stdout.write("done.\n")
@@ -50,7 +54,16 @@ def main() -> int:
         repo.index.commit(mkCommitMsg("Add the file"))
         sys.stdout.write("done.\n")
 
-    
+    while True:
+        d = datetime.now()
+        dstr = f"[{d.month}/{d.day}/{d.year} - {d.hour}:{d.minute}:{d.second}]"
+        sys.stdout.write(f"[{dstr}] Running a commit for your green square schemes... ")
+        with open(changed_file, "a") as f:
+            f.write("\n%s" % str(uuid.uuid4()))
+        repo.index.add(changed_file)
+        repo.index.commit(mkCommitMsg(f"Here be green squares. {d.month}/{d.day}/{d.year}"))
+        sys.stdout.write("done.\n")
+        sleep(5)
     return 0
 
 # import run prevention
