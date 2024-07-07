@@ -19,16 +19,15 @@
 `docker run -d --restart=unless-stopped -e GIT_REPO="git@github.com:Username/Repository.git" -v /path/to/your/identity/file:/root/.ssh/id_ALGO --name greensquaresplusplus alphagamedev/greensquaresplusplus:latest`
 
 <h3>Docker Compose</h3>
+
 ```yaml
 version: "3"
 
 services:
-	greensquares:
-		image: alphagamedev/greensquaresplusplus:latest
-
-		volumes:
-			- "id_rsa:/root/.ssh/id_rsa"
-
-		environment:
-			GIT_REPO: "git@github.com:username/repo.git"
+    greensquares:
+        image: alphagamedev/greensquaresplusplus:latest
+        volumes:
+            - "/path/to/id_rsa:/root/.ssh/id_rsa"
+        environment:
+            GIT_REPO: "git@github.com:username/repo.git"
 ```
