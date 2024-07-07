@@ -24,9 +24,10 @@ def webhook(message):
     useWebhook = (webhook != None)
 
     if useWebhook:
-        post(webhook, {
+        r = post(webhook, {
             "content": "**[ :green_square:++ ]** %s" % message
         })
+        return r # useless but...
 
 def main() -> int:
     """Program Entrypoint Function
@@ -34,9 +35,12 @@ def main() -> int:
     # display a banner because, well, i like it, OK?
     # i guess a file isn't best but I don't really want it
     # in this file.
-    with open("%s/banner.txt" % os.path.dirname(__file__), "r") as f:
-        print(f.read())
-    
+    try:
+        with open("%s/banner.txt" % os.path.dirname(__file__), "r") as f:
+            print(f.read())
+    except FileNotFoundError:
+        print("GreenSquares++ (Could not get the banner from banner.txt)")
+        
     local_dir = os.getenv("GIT_LOCAL_DIR", "./git_repository")
     changed_file = os.getenv("GIT_MODIFIED_FILE", "file.txt")
     repository = os.getenv("GIT_REPO", None)
@@ -107,6 +111,8 @@ def main() -> int:
         repo.index.commit(mkCommitMsg("Add the file"))
         sys.stdout.write("done.\n")
 
+    origin = repo.remotes.origin
+    
     webhook("GreenSquares++ has started!")
     
     while True:
@@ -114,13 +120,13 @@ def main() -> int:
         dstr = f"[{d.month}/{d.day}/{d.year} - {d.hour}:{d.minute}:{d.second}]"
         sys.stdout.write(f"[{dstr}] Running a commit for your green square schemes... ")
         with open(changed_file, "a") as f:
-            f.write("\n%s" % str(uuid.uuid4()))
+            f.write(f"\n{str(uuid.uuid4())}  {dstr}")
         repo.index.add(changed_file)
         repo.index.commit(mkCommitMsg(f"Here be green squares. {d.month}/{d.day}/{d.year}"))
         sys.stdout.write("done.\n")
         webhook("Commit OK")
-        sleep(commitInterval)
-
+        origin.push()
+        sleep(commitInterval)    
     return 0
 
 # import run prevention
